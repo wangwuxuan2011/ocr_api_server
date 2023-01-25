@@ -91,8 +91,8 @@ def set_ret(result, ret_type='text'):
             return str(result).strip()
 
 
-@app.route('/<opt>/<img_type>', methods=['POST'])
-@app.route('/<opt>/<img_type>/<ret_type>', methods=['POST'])
+@app.route('/captcha-ocr/<opt>/<img_type>', methods=['POST'])
+@app.route('/captcha-ocr/<opt>/<img_type>/<ret_type>', methods=['POST'])
 def ocr(opt, img_type='file', ret_type='text'):
     try:
         img = get_img(request, img_type)
@@ -106,8 +106,8 @@ def ocr(opt, img_type='file', ret_type='text'):
     except Exception as e:
         return set_ret(e, ret_type)
 
-@app.route('/slide/<algo_type>/<img_type>', methods=['POST'])
-@app.route('/slide/<algo_type>/<img_type>/<ret_type>', methods=['POST'])
+@app.route('/captcha-ocr/slide/<algo_type>/<img_type>', methods=['POST'])
+@app.route('/captcha-ocr/slide/<algo_type>/<img_type>/<ret_type>', methods=['POST'])
 def slide(algo_type='compare', img_type='file', ret_type='text'):
     try:
         target_img = get_img(request, img_type, 'target_img')
@@ -117,7 +117,7 @@ def slide(algo_type='compare', img_type='file', ret_type='text'):
     except Exception as e:
         return set_ret(e, ret_type)
 
-@app.route('/ping', methods=['GET'])
+@app.route('/captcha-ocr/ping', methods=['GET'])
 def ping():
     return "pong"
 
