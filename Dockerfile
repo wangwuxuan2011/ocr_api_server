@@ -14,4 +14,4 @@ RUN cd /app \
 
 WORKDIR /app
 
-CMD ["python3", "ocr_server.py", "--port", "9898", "--ocr", "--det"]
+CMD ["python3", "ocr_server.py", "--port", "9000", "--ocr", "--det"]
