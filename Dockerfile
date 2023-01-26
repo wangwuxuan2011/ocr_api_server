@@ -2,7 +2,9 @@ FROM python:3.8-slim-buster
 
 RUN mkdir /app
 
-COPY ./*.txt ./*.py ./*.sh ./*.onnx ./*.html /app/
+COPY ./*.txt ./*.py ./*.sh ./*.onnx /app/
+# copy templates
+COPY ./templates /app/templates
 
 
 RUN cd /app \
