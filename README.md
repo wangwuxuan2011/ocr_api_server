@@ -1,12 +1,12 @@
 # 验证码识别接口
 
-*（接口能力由[ddddocr](https://github.com/sml2h3/ddddocr)及[ocr_api_server](https://github.com/sml2h3/ocr_api_server)提供支持）*
+*（接口能力由[ddddocr](https://github.com/sml2h3/ddddocr)及[ocr_api_server](https://github.com/wangwuxuan2011/ocr_api_server)提供支持）*
 
 ## 接口说明
 
 1. 测试接口：
 
-   地址：[/ping](/ping)
+   地址：[ping](ping)
 
    请求方式：GET
 
@@ -16,9 +16,9 @@
 
 2. 图片验证码识别（base64）：
 
-   base64方式地址：[/ocr](/ocr) 或 [/ocr/base64](/ocr/base64)
+   base64方式地址：[ocr](ocr) 或 [ocr/base64](ocr/base64)
 
-   文件上传方式地址：[/ocr/file](/ocr/file)
+   文件上传方式地址：[ocr/file](ocr/file)
 
    请求方式：GET或POST
 
@@ -39,9 +39,9 @@
 
 3. 目标检测识别（base64或文件上传）：
 
-   base64方式地址：[/det](/det) 或 [/det/base64](/det/base64)
+   base64方式地址：[det](det) 或 [det/base64](det/base64)
 
-   文件上传方式地址：[/det/file](/det/file)
+   文件上传方式地址：[det/file](det/file)
 
    请求方式：GET或POST
 

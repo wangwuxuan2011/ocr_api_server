@@ -6,7 +6,7 @@ import json
 
 import chardet as chardet
 import ddddocr
-from flask import Flask, request
+from flask import Flask, request, render_template
 
 parser = argparse.ArgumentParser(description="使用ddddocr搭建的最简api服务")
 parser.add_argument("-p", "--port", type=int, default=9000)
@@ -119,6 +119,9 @@ def set_ret(result, return_type='json'):
 @app.route('/captcha-ocr/<option>/', methods=['GET', 'POST'])
 @app.route('/captcha-ocr/<option>/<file_type>/', methods=['GET', 'POST'])
 def ocr(option, file_type='base64'):
+    if get_kv(request, key='image') is None:
+        return render_template('upload_empty.html')
+        # return set_ret(Exception("未上传图片"), get_kv(request, key="return_type", default='json'))
     try:
         img = get_img(request, file_type)
         if option == 'ocr':
@@ -148,6 +151,11 @@ def ocr(option, file_type='base64'):
 @app.route('/captcha-ocr/ping/', methods=['GET'])
 def ping():
     return "pong"
+
+
+@app.route('/captcha-ocr/', methods=['GET'])
+def index():
+    return render_template('README.html')
 
 
 if __name__ == '__main__':
