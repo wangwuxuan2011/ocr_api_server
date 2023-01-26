@@ -1,13 +1,15 @@
 # encoding=utf-8
 import argparse
 import base64
+import datetime
 import json
 
+import chardet as chardet
 import ddddocr
 from flask import Flask, request
 
 parser = argparse.ArgumentParser(description="使用ddddocr搭建的最简api服务")
-parser.add_argument("-p", "--port", type=int, default=9898)
+parser.add_argument("-p", "--port", type=int, default=9000)
 parser.add_argument("--ocr", action="store_true", help="开启ocr识别")
 parser.add_argument("--old", action="store_true", help="OCR是否启动旧模型")
 parser.add_argument("--det", action="store_true", help="开启目标检测")
@@ -61,63 +63,89 @@ class Server(object):
         else:
             raise Exception(f"不支持的滑块算法类型: {algo_type}")
 
+
 server = Server(ocr=args.ocr, det=args.det, old=args.old)
 
 
-def get_img(request, img_type='file', img_name='image'):
-    if img_type == 'b64':
-        img = base64.b64decode(request.get_data()) # 
-        try: # json str of multiple images
-            dic = json.loads(img)
-            img = base64.b64decode(dic.get(img_name).encode())
-        except Exception as e: # just base64 of single image
-            pass
+def get_img(request, img_type='base64', key='image'):
+    if img_type == 'base64':
+        try:
+            img = base64.b64decode(get_kv(request, key=key).encode())
+        except Exception:
+            raise Exception("解码失败")
     else:
-        img = request.files.get(img_name).read()
+        img = get_kv(request, type="file").read()
     return img
 
 
-def set_ret(result, ret_type='text'):
-    if ret_type == 'json':
-        if isinstance(result, Exception):
-            return json.dumps({"status": 200, "result": "", "msg": str(result)})
+# 获取request中的json键值对，支持POST和GET,支持不同Content-Type
+def get_kv(request, type="text", key="image", default=None):
+    if type == "file":
+        return request.files.get(key, default)
+    elif type == "text":
+        if request.method == "POST":
+            if request.content_type == "application/json":
+                try:
+                    return request.get_json().get(key, default)
+                except Exception:
+                    return default
+            elif request.content_type == "text/plain":
+                if key == "image":
+                    return request.get_data().decode()  # 纯文本直接输出所有文本
+                return default
+            else:
+                return request.form.get(key, default)
         else:
-            return json.dumps({"status": 200, "result": result, "msg": ""})
-        # return json.dumps({"succ": isinstance(result, str), "result": str(result)})
+            return request.args.get(key, default)
+    return default
+
+
+def set_ret(result, return_type='json'):
+    if return_type == 'json':
+        time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        if isinstance(result, Exception):
+            return json.dumps({"status": 500, "result": None, "msg": str(result), "time": time}), 200, {
+                'Content-Type': 'application/json'}
+        else:
+            return json.dumps({"status": 200, "result": result, "msg": "success", "time": time}), 200, {
+                'Content-Type': 'application/json'}
     else:
         if isinstance(result, Exception):
-            return ''
+            return None, 500, {'Content-Type': 'text/plain'}
         else:
-            return str(result).strip()
+            return str(result).strip(), 200, {'Content-Type': 'text/plain'}
 
 
-@app.route('/captcha-ocr/<opt>/<img_type>', methods=['POST'])
-@app.route('/captcha-ocr/<opt>/<img_type>/<ret_type>', methods=['POST'])
-def ocr(opt, img_type='file', ret_type='text'):
+@app.route('/captcha-ocr/<option>/', methods=['GET', 'POST'])
+@app.route('/captcha-ocr/<option>/<file_type>/', methods=['GET', 'POST'])
+def ocr(option, file_type='base64'):
     try:
-        img = get_img(request, img_type)
-        if opt == 'ocr':
+        img = get_img(request, file_type)
+        if option == 'ocr':
             result = server.classification(img)
-        elif opt == 'det':
+        elif option == 'det':
             result = server.detection(img)
         else:
-            raise f"<opt={opt}> is invalid"
-        return set_ret(result, ret_type)
+            raise f"<opt={option}> is invalid"
+        return set_ret(result, get_kv(request, key="return_type", default='json'))
     except Exception as e:
-        return set_ret(e, ret_type)
+        return set_ret(e, get_kv(request, key="return_type", default='json'))
 
-@app.route('/captcha-ocr/slide/<algo_type>/<img_type>', methods=['POST'])
-@app.route('/captcha-ocr/slide/<algo_type>/<img_type>/<ret_type>', methods=['POST'])
-def slide(algo_type='compare', img_type='file', ret_type='text'):
-    try:
-        target_img = get_img(request, img_type, 'target_img')
-        bg_img = get_img(request, img_type, 'bg_img')
-        result = server.slide(target_img, bg_img, algo_type)
-        return set_ret(result, ret_type)
-    except Exception as e:
-        return set_ret(e, ret_type)
 
-@app.route('/captcha-ocr/ping', methods=['GET'])
+# 还没看明白，先不写
+# @app.route('/captcha-ocr/slide/<algo_type>/<img_type>/', methods=['POST'])
+# @app.route('/captcha-ocr/slide/<algo_type>/<img_type>/<return_type>/', methods=['POST'])
+# def slide(algo_type='compare', img_type='file'):
+#     try:
+#         target_img = get_img(request, img_type, 'target_img')
+#         bg_img = get_img(request, img_type, 'bg_img')
+#         result = server.slide(target_img, bg_img, algo_type)
+#         return set_ret(result, get_kv(request, key="return_type", default='json'))
+#     except Exception as e:
+#         return set_ret(e, get_kv(request, key="return_type", default='json'))
+
+
+@app.route('/captcha-ocr/ping/', methods=['GET'])
 def ping():
     return "pong"
 
