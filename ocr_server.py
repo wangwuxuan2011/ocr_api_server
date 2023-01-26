@@ -4,7 +4,6 @@ import base64
 import datetime
 import json
 
-import chardet as chardet
 import ddddocr
 from flask import Flask, request, render_template
 
