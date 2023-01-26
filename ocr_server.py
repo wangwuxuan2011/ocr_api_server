@@ -112,7 +112,7 @@ def set_ret(result, return_type='json'):
         if isinstance(result, Exception):
             return None, 500, {'Content-Type': 'text/plain'}
         else:
-            return str(result).strip(), 200, {'Content-Type': 'text/plain'}
+            return str(result).strip(), 500, {'Content-Type': 'text/plain'}
 
 
 @app.route('/captcha-ocr/<option>/', methods=['GET', 'POST'])
