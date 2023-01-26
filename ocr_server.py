@@ -78,10 +78,10 @@ def get_img(request, img_type='base64', key='image'):
 
 
 # 获取request中的json键值对，支持POST和GET,支持不同Content-Type
-def get_kv(request, type="text", key="image", default=None):
+def get_kv(request, type="base64", key="image", default=None):
     if type == "file":
         return request.files.get(key, default)
-    elif type == "text":
+    elif type == "base64":
         if request.method == "POST":
             if request.content_type == "application/json":
                 try:
@@ -118,9 +118,8 @@ def set_ret(result, return_type='json'):
 @app.route('/captcha-ocr/<option>/', methods=['GET', 'POST'])
 @app.route('/captcha-ocr/<option>/<file_type>/', methods=['GET', 'POST'])
 def ocr(option, file_type='base64'):
-    if get_kv(request, key='image') is None:
-        return render_template('upload_empty.html')
-        # return set_ret(Exception("未上传图片"), get_kv(request, key="return_type", default='json'))
+    if get_kv(request, file_type, key='image') is None:
+        return render_template('upload_empty.html'), 400, {'Content-Type': 'text/html'}
     try:
         img = get_img(request, file_type)
         if option == 'ocr':
