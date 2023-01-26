@@ -2,8 +2,7 @@ FROM python:3.8-slim-buster
 
 RUN mkdir /app
 
-COPY dir /app/
-#COPY ./*.txt ./*.py ./*.sh ./*.onnx ./*.html /app/
+COPY ./*.txt ./*.py ./*.sh ./*.onnx ./*.html /app/
 
 
 RUN cd /app \
